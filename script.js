@@ -252,7 +252,7 @@ function removePlayer(index) {
     const playerName = players[index];
     players.splice(index, 1); // Eliminar jugador de la lista
     delete scores[playerName]; // Eliminar el puntaje del jugador
-    updatePlayerList();
+    updatePlayerList(); // Actualiza la lista
     localStorage.setItem('players', JSON.stringify(players)); // Actualizar los jugadores en localStorage
 }
 
