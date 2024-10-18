@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz Quest | Preguntas y Respuestas</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <h1>🎉 Quiz Quest 🎉</h1>
+
+        <div id="setup">
+            <h2>Ingresa los Nombres de los Jugadores:</h2>
+            <div class="input-group">
+                <input type="text" id="playerInput" placeholder="Nombre del jugador" autofocus>
+                <button id="addPlayer">Agregar</button>
+            </div>
+            <ul id="playerList"></ul>
+
+            <div class="controls">
+                <label for="timeSelect">Tiempo para responder:</label>
+                <select id="timeSelect">
+                    <option value="30">30 segundos</option>
+                    <option value="20">20 segundos</option>
+                    <option value="10">10 segundos</option>
+                </select>
+                
+                <label for="roundsSelect">Número de rondas:</label>
+                <select id="roundsSelect">
+                    <option value="1">1 ronda</option>
+                    <option value="3">3 rondas</option>
+                    <option value="5">5 rondas</option>
+                </select>
+                
+                <label for="presets">Seleccionar Preguntas:</label>
+                <select id="presets">
+                    <option value="simplePresent">Simple Presente</option>
+                    <option value="continuousPresent">Presente Continuo</option>
+                    <option value="geography">Geografía</option>
+                </select>
+                
+                <button id="loadPresets">Cargar Preguntas</button>
+                <button id="customMode">Modo Personalizado</button>
+                <button id="startButton">Iniciar Juego</button>
+            </div>
+        </div>
+
+        <div id="game" style="display: none;">
+            <h2 id="currentPlayerName" style="font-size: 2em;"></h2>
+            <h2>Pregunta:</h2>
+            <div class="question-card">
+                <p id="question"></p>
+                <p id="hint" style="display:none; font-style: italic;"></p>
+                <div class="timer">
+                    <span id="time">30</span> segundos
+                </div>
+                <input type="text" id="answer" placeholder="Tu respuesta" disabled>
+                <button id="submitAnswer" disabled>Enviar Respuesta</button>
+            </div>
+        </div>
+
+        <div id="scores" style="display: none;">
+            <h2>Puntuaciones</h2>
+            <table id="scoreboard">
+                <thead>
+                    <tr>
+                        <th>Jugador</th>
+                        <th>Puntuación</th>
+                        <th>Estado</th>
+                        <th>Preguntas Acertadas</th>
+                        <th>Preguntas Fallidas</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+            <h3>Mejores Jugadores</h3>
+            <ul id="topPlayers"></ul>
+            <button id="retryButton" style="display: none;">Reintentar Partida</button>
+        </div>
+
+        <div id="editQuestionsModal" style="display: none;">
+            <h2>Editar Preguntas</h2>
+            <textarea id="questionsText" rows="10" placeholder="Escribe tus preguntas aquí (formato: pregunta|respuesta|pista)"></textarea>
+            <div class="controls">
+                <button id="saveQuestions">Guardar Preguntas</button>
+                <button id="closeEdit">Cerrar</button>
+            </div>
+        </div>
+
+        <div id="customModeModal" style="display: none;">
+            <h2>Modo Personalizado</h2>
+            <textarea id="customQuestionsText" rows="10" placeholder="Escribe tus preguntas aquí (formato: pregunta|respuesta|pista)"></textarea>
+            <div class="controls">
+                <button id="saveCustomQuestions">Guardar Preguntas Personalizadas</button>
+                <button id="closeCustomMode">Cerrar</button>
+            </div>
+        </div>
+
+        <div id="instructions" style="display: none;">
+            <h2>Cómo Jugar</h2>
+            <ol>
+                <li>Cada jugador ingresa su nombre.</li>
+                <li>Se selecciona una pregunta al azar para un jugador.</li>
+                <li>El jugador tiene un tiempo limitado para responder.</li>
+                <li>Si responde correctamente, gana un punto. Si no, se resta un punto.</li>
+                <li>Si un jugador llega a 0 puntos, queda descalificado.</li>
+            </ol>
+            <button id="closeInstructions">Cerrar</button>
+        </div>
+
+        <div id="message" style="display: none;"></div>
+        <button id="showInstructions">Instrucciones</button>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
