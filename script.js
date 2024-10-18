@@ -3,11 +3,18 @@ let scores = {};
 let currentQuestion;
 let timeLeft;
 let timerInterval;
-let players = [];
+let players = JSON.parse(localStorage.getItem('players')) || [];
 let currentPlayerIndex = 0;
-let totalRounds;
+let totalRounds = localStorage.getItem('totalRounds') || 3;
 let currentRound = 0;
-let allowRepeats;
+let allowRepeats = localStorage.getItem('allowRepeats') === 'yes';
+
+// Actualizar los controles del tiempo y las rondas desde localStorage
+document.getElementById('timeSelect').value = localStorage.getItem('time') || 30;
+document.getElementById('timeValue').textContent = `${localStorage.getItem('time') || 30} segundos`;
+document.getElementById('roundsSelect').value = totalRounds;
+document.getElementById('roundsValue').textContent = `${totalRounds} rondas`;
+document.getElementById('repeatQuestions').value = allowRepeats ? 'yes' : 'no';
 
 const presets = {
     simplePresent: [
@@ -175,6 +182,9 @@ const presets = {
     ]
 };
 
+// Recuperar la lista de jugadores si hay jugadores almacenados
+updatePlayerList();
+
 document.getElementById('addPlayer').addEventListener('click', addPlayer);
 document.getElementById('startButton').addEventListener('click', startGame);
 document.getElementById('submitAnswer').addEventListener('click', checkAnswer);
@@ -184,7 +194,6 @@ document.getElementById('saveCustomQuestions').addEventListener('click', saveCus
 document.getElementById('showInstructions').addEventListener('click', showInstructions);
 document.getElementById('closeInstructions').addEventListener('click', closeInstructions);
 document.getElementById('retryButton').addEventListener('click', retryGame);
-document.getElementById('changeModeButton').addEventListener('click', changeGameMode);
 document.getElementById('closeCustomMode').addEventListener('click', () => {
     document.getElementById('editQuestionsModal').style.display = 'none';
 });
@@ -193,16 +202,19 @@ document.getElementById('hintButton').addEventListener('click', giveHint);
 const timeSelect = document.getElementById('timeSelect');
 timeSelect.addEventListener('input', function() {
     document.getElementById('timeValue').textContent = `${timeSelect.value} segundos`;
+    localStorage.setItem('time', timeSelect.value); // Guardar el tiempo en localStorage
 });
 
 const roundsSelect = document.getElementById('roundsSelect');
 roundsSelect.addEventListener('input', function() {
     document.getElementById('roundsValue').textContent = `${roundsSelect.value} rondas`;
+    localStorage.setItem('totalRounds', roundsSelect.value); // Guardar las rondas en localStorage
 });
 
 const repeatQuestionsSelect = document.getElementById('repeatQuestions');
 repeatQuestionsSelect.addEventListener('change', function() {
     allowRepeats = repeatQuestionsSelect.value === 'yes';
+    localStorage.setItem('allowRepeats', allowRepeats ? 'yes' : 'no'); // Guardar la opción de repetir preguntas
 });
 
 function addPlayer() {
@@ -213,17 +225,35 @@ function addPlayer() {
         scores[playerName] = { score: 0, correct: 0, incorrect: 0 };
         playerInput.value = '';
         updatePlayerList();
+        localStorage.setItem('players', JSON.stringify(players)); // Guardar los nombres de los jugadores en localStorage
     }
 }
 
 function updatePlayerList() {
     const playerList = document.getElementById('playerList');
     playerList.innerHTML = '';
-    players.forEach(player => {
+    players.forEach((player, index) => {
         const li = document.createElement('li');
         li.textContent = player;
+
+        // Añadir botón para quitar jugadores
+        const removeButton = document.createElement('button');
+        removeButton.textContent = 'Quitar';
+        removeButton.addEventListener('click', () => {
+            removePlayer(index);
+        });
+
+        li.appendChild(removeButton);
         playerList.appendChild(li);
     });
+}
+
+function removePlayer(index) {
+    const playerName = players[index];
+    players.splice(index, 1); // Eliminar jugador de la lista
+    delete scores[playerName]; // Eliminar el puntaje del jugador
+    updatePlayerList();
+    localStorage.setItem('players', JSON.stringify(players)); // Actualizar los jugadores en localStorage
 }
 
 function startGame() {
@@ -247,6 +277,12 @@ function loadPresets() {
 }
 
 function nextRound() {
+    if (players.length === 1) {
+        alert(`${players[0]} es el ganador!`);
+        endGame();
+        return;
+    }
+
     if (currentRound < totalRounds) {
         currentPlayerIndex = 0; // Reiniciar el índice del jugador para cada nueva ronda
         askNextQuestion();
@@ -319,11 +355,14 @@ function checkAnswer() {
     if (scores[players[currentPlayerIndex]].score <= 0) {
         alert(`${players[currentPlayerIndex]} ha sido descalificado.`);
         players.splice(currentPlayerIndex, 1); // Elimina al jugador
-        if (players.length === 0) {
-            alert("Todos los jugadores han sido descalificados. Fin del juego.");
+        localStorage.setItem('players', JSON.stringify(players)); // Actualiza los jugadores en localStorage
+
+        if (players.length === 1) {
+            alert(`${players[0]} es el ganador!`);
             endGame();
             return;
         }
+
     } else {
         answerInput.value = '';
     }
@@ -337,7 +376,7 @@ function endGame() {
     document.getElementById('game').style.display = 'none';
     displayScores();
     document.getElementById('retryButton').style.display = 'block';
-    document.getElementById('changeModeButton').style.display = 'block';
+    localStorage.clear(); // Limpiar localStorage al final del juego
 }
 
 function displayScores() {
@@ -355,15 +394,13 @@ function displayScores() {
 }
 
 function retryGame() {
+    players = [];
     scores = {};
-    players.forEach(player => {
-        scores[player] = { score: 0, correct: 0, incorrect: 0 };
-    });
     currentRound = 0;
     currentPlayerIndex = 0;
     document.getElementById('scores').style.display = 'none';
-    document.getElementById('game').style.display = 'block';
-    nextRound();
+    document.getElementById('retryButton').style.display = 'none';
+    document.getElementById('setup').style.display = 'block';
 }
 
 function openCustomMode() {
@@ -371,7 +408,7 @@ function openCustomMode() {
 }
 
 function saveCustomQuestions() {
-    const customQuestionsText = document.getElementById('customQuestionsText').value.trim();
+    const customQuestionsText = document.getElementById('customQuestionsText').value;
     const customQuestions = customQuestionsText.split('\n').map(line => {
         const parts = line.split('|');
         return {
@@ -401,17 +438,4 @@ function giveHint() {
     } else {
         alert("No hay pista disponible para esta pregunta.");
     }
-}
-
-function changeGameMode() {
-    const changeOption = confirm("¿Deseas cambiar de preset o usar el modo personalizado?");
-    if (changeOption) {
-        const useCustomMode = confirm("¿Quieres usar el modo personalizado?");
-        if (useCustomMode) {
-            openCustomMode();
-        } else {
-            loadPresets(); // Permitir seleccionar nuevo preset
-        }
-    }
-    document.getElementById('changeModeButton').style.display = 'none'; // Ocultar el botón después de cambiar
 }
