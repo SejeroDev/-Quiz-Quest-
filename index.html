@@ -19,28 +19,43 @@
             <ul id="playerList"></ul>
 
             <div class="controls">
-                <label for="timeSelect">Tiempo para responder:</label>
-                <select id="timeSelect">
-                    <option value="30">30 segundos</option>
-                    <option value="20">20 segundos</option>
-                    <option value="10">10 segundos</option>
-                </select>
-                
-                <label for="roundsSelect">Número de rondas:</label>
-                <select id="roundsSelect">
-                    <option value="1">1 ronda</option>
-                    <option value="3">3 rondas</option>
-                    <option value="5">5 rondas</option>
-                </select>
-                
-                <label for="presets">Seleccionar Preguntas:</label>
-                <select id="presets">
-                    <option value="simplePresent">Simple Presente</option>
-                    <option value="continuousPresent">Presente Continuo</option>
-                    <option value="geography">Geografía</option>
-                </select>
+                <div class="time-control">
+                    <label for="timeSelect">Tiempo para responder:</label>
+                    <input type="range" id="timeSelect" min="10" max="60" value="30">
+                    <span id="timeValue">30 segundos</span>
+                </div>
+
+                <div class="rounds-control">
+                    <label for="roundsSelect">Número de rondas:</label>
+                    <input type="range" id="roundsSelect" min="1" max="10" value="3">
+                    <span id="roundsValue">3 rondas</span>
+                </div>
+
+                <div class="repeat-questions-control">
+                    <label for="repeatQuestions">Repetir preguntas:</label>
+                    <select id="repeatQuestions">
+                        <option value="yes">Sí</option>
+                        <option value="no">No</option>
+                    </select>
+                </div>
+
+                <div class="presets-control">
+                    <label for="presets">Seleccionar Preguntas:</label>
+                    <select id="presets">
+                        <option value="simplePresent">Simple Presente</option>
+                        <option value="continuousPresent">Presente Continuo</option>
+                        <option value="geography">Geografía</option>
+                        <option value="programming">Programación</option>
+                        <option value="math">Matemáticas</option>
+                        <option value="history">Historia</option>
+                    </select>
+                </div>
                 
                 <button id="loadPresets">Cargar Preguntas</button>
+                <p>Debes tocar el botón para usar las preguntas predefinidas.</p>
+            </div>
+
+            <div class="game-controls">
                 <button id="customMode">Modo Personalizado</button>
                 <button id="startButton">Iniciar Juego</button>
             </div>
@@ -57,6 +72,7 @@
                 </div>
                 <input type="text" id="answer" placeholder="Tu respuesta" disabled>
                 <button id="submitAnswer" disabled>Enviar Respuesta</button>
+                <button id="hintButton">Pista (-1 punto)</button>
             </div>
         </div>
 
@@ -74,21 +90,10 @@
                 </thead>
                 <tbody></tbody>
             </table>
-            <h3>Mejores Jugadores</h3>
-            <ul id="topPlayers"></ul>
             <button id="retryButton" style="display: none;">Reintentar Partida</button>
         </div>
 
         <div id="editQuestionsModal" style="display: none;">
-            <h2>Editar Preguntas</h2>
-            <textarea id="questionsText" rows="10" placeholder="Escribe tus preguntas aquí (formato: pregunta|respuesta|pista)"></textarea>
-            <div class="controls">
-                <button id="saveQuestions">Guardar Preguntas</button>
-                <button id="closeEdit">Cerrar</button>
-            </div>
-        </div>
-
-        <div id="customModeModal" style="display: none;">
             <h2>Modo Personalizado</h2>
             <textarea id="customQuestionsText" rows="10" placeholder="Escribe tus preguntas aquí (formato: pregunta|respuesta|pista)"></textarea>
             <div class="controls">

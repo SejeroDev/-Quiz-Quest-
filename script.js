@@ -1,4 +1,4 @@
-let questions = []; 
+let questions = [];
 let scores = {};
 let currentQuestion;
 let timeLeft;
@@ -7,6 +7,7 @@ let players = [];
 let currentPlayerIndex = 0;
 let totalRounds;
 let currentRound = 0;
+let allowRepeats;
 
 const presets = {
     simplePresent: [
@@ -23,6 +24,21 @@ const presets = {
         { question: "¿Cuál es la capital de Francia?", answer: "París", hint: "Es famosa por la Torre Eiffel." },
         { question: "¿Qué océano está al este de los Estados Unidos?", answer: "Atlántico", hint: "Es uno de los océanos más grandes." },
         { question: "¿Qué país tiene la forma de una bota?", answer: "Italia", hint: "Famoso por su comida y arte." }
+    ],
+    programming: [
+        { question: "¿Qué se utiliza para imprimir en la consola en JavaScript?", answer: "console.log", hint: "Es un método." },
+        { question: "¿Cómo se declara una variable en JavaScript?", answer: "let", hint: "También puedes usar 'var' o 'const'." },
+        { question: "¿Qué es un bucle?", answer: "Una estructura que repite acciones.", hint: "Se puede usar 'for', 'while', etc." }
+    ],
+    math: [
+        { question: "¿Cuánto es 5 + 7?", answer: "12", hint: "Suma dos números." },
+        { question: "¿Cuál es el área de un cuadrado con lados de 4?", answer: "16", hint: "Multiplica el lado por sí mismo." },
+        { question: "¿Cuánto es 9 * 9?", answer: "81", hint: "Es el cuadrado de 9." }
+    ],
+    history: [
+        { question: "¿Quién fue el primer presidente de los EE. UU.?", answer: "George Washington", hint: "Sirvió de 1789 a 1797." },
+        { question: "¿En qué año comenzó la Segunda Guerra Mundial?", answer: "1939", hint: "Fue un conflicto global." },
+        { question: "¿Quién fue Cleopatra?", answer: "Reina de Egipto", hint: "Conocida por su belleza." }
     ]
 };
 
@@ -36,7 +52,23 @@ document.getElementById('showInstructions').addEventListener('click', showInstru
 document.getElementById('closeInstructions').addEventListener('click', closeInstructions);
 document.getElementById('retryButton').addEventListener('click', retryGame);
 document.getElementById('closeCustomMode').addEventListener('click', () => {
-    document.getElementById('customModeModal').style.display = 'none';
+    document.getElementById('editQuestionsModal').style.display = 'none';
+});
+document.getElementById('hintButton').addEventListener('click', giveHint);
+
+const timeSelect = document.getElementById('timeSelect');
+timeSelect.addEventListener('input', function() {
+    document.getElementById('timeValue').textContent = `${timeSelect.value} segundos`;
+});
+
+const roundsSelect = document.getElementById('roundsSelect');
+roundsSelect.addEventListener('input', function() {
+    document.getElementById('roundsValue').textContent = `${roundsSelect.value} rondas`;
+});
+
+const repeatQuestionsSelect = document.getElementById('repeatQuestions');
+repeatQuestionsSelect.addEventListener('change', function() {
+    allowRepeats = repeatQuestionsSelect.value === 'yes';
 });
 
 function addPlayer() {
@@ -65,9 +97,10 @@ function startGame() {
         alert("Por favor, añade al menos un jugador.");
         return;
     }
-    totalRounds = parseInt(document.getElementById('roundsSelect').value);
+    totalRounds = parseInt(roundsSelect.value);
     currentRound = 0;
     currentPlayerIndex = 0;
+    allowRepeats = repeatQuestionsSelect.value === 'yes';
     document.getElementById('setup').style.display = 'none';
     document.getElementById('game').style.display = 'block';
     nextQuestion();
@@ -83,8 +116,20 @@ function nextQuestion() {
     if (currentRound < totalRounds) {
         const currentPlayerName = players[currentPlayerIndex];
         document.getElementById('currentPlayerName').textContent = currentPlayerName;
+
+        if (!allowRepeats) {
+            // Filtrar preguntas ya usadas
+            questions = questions.filter(q => !q.used);
+            if (questions.length === 0) {
+                alert("No hay más preguntas disponibles. Fin del juego.");
+                endGame();
+                return;
+            }
+        }
+
         currentQuestion = questions[Math.floor(Math.random() * questions.length)];
         document.getElementById('question').textContent = currentQuestion.question;
+        document.getElementById('hint').style.display = 'none';
         document.getElementById('answer').disabled = false;
         document.getElementById('submitAnswer').disabled = false;
         timeLeft = parseInt(document.getElementById('timeSelect').value);
@@ -112,10 +157,17 @@ function checkAnswer() {
 
     if (answer.toLowerCase() === correctAnswer.toLowerCase()) {
         scores[players[currentPlayerIndex]].score++;
+        scores[players[currentPlayerIndex]].correct++;
         alert("¡Correcto!");
     } else {
         scores[players[currentPlayerIndex]].score--;
+        scores[players[currentPlayerIndex]].incorrect++;
         alert(`Incorrecto. La respuesta correcta era: ${correctAnswer}`);
+    }
+
+    // Marcar la pregunta como usada si no se permiten repeticiones
+    if (!allowRepeats) {
+        currentQuestion.used = true;
     }
 
     answerInput.value = '';
@@ -161,7 +213,7 @@ function retryGame() {
 }
 
 function openCustomMode() {
-    document.getElementById('customModeModal').style.display = 'block';
+    document.getElementById('editQuestionsModal').style.display = 'block';
 }
 
 function saveCustomQuestions() {
@@ -174,10 +226,10 @@ function saveCustomQuestions() {
             hint: parts[2] || ''
         };
     });
-    questions = customQuestions;
+    questions = [...questions, ...customQuestions]; // Agregar preguntas personalizadas
     alert("Preguntas personalizadas guardadas.");
     document.getElementById('customQuestionsText').value = '';
-    document.getElementById('customModeModal').style.display = 'none';
+    document.getElementById('editQuestionsModal').style.display = 'none';
 }
 
 function showInstructions() {
@@ -186,4 +238,13 @@ function showInstructions() {
 
 function closeInstructions() {
     document.getElementById('instructions').style.display = 'none';
+}
+
+function giveHint() {
+    if (currentQuestion && currentQuestion.hint) {
+        alert(`Pista: ${currentQuestion.hint}`);
+        scores[players[currentPlayerIndex]].score--; // Descuenta 1 punto
+    } else {
+        alert("No hay pista disponible para esta pregunta.");
+    }
 }
