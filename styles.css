@@ -1,81 +1,96 @@
 body {
     font-family: 'Arial', sans-serif;
-    background-color: #1a1a1a; /* Fondo oscuro */
-    color: #ffffff;
+    background-color: #0d1117; /* Fondo oscuro */
+    color: #c9d1d9;
     margin: 0;
     padding: 20px;
+    transition: background-color 0.5s, color 0.5s;
 }
 
 .container {
     max-width: 900px;
     margin: auto;
-    background: #282828; /* Fondo gris oscuro */
+    background: #161b22; /* Fondo gris oscuro */
     padding: 50px;
     border-radius: 12px;
     box-shadow: 0 8px 40px rgba(0, 0, 0, 0.8);
+    transition: background-color 0.5s, box-shadow 0.5s;
 }
 
 h1, h2 {
-    color: #ffdd33; /* Amarillo más suave */
+    color: #58a6ff; /* Azul claro */
     text-align: center;
     margin-bottom: 20px;
     font-weight: bold;
+    transition: color 0.5s;
 }
 
 input[type="text"], textarea, select, input[type="range"] {
     width: calc(100% - 20px);
     padding: 15px;
     margin: 10px 0;
-    border: 2px solid #ffdd33;
+    border: 2px solid #58a6ff;
     border-radius: 6px;
-    background: #505050;
+    background: #30363d;
     color: white;
     font-size: 16px;
+    transition: border-color 0.3s, background-color 0.3s, transform 0.3s;
 }
 
 input[type="text"]:focus, select:focus, input[type="range"]:focus {
-    border-color: #ffcc33;
+    border-color: #1f6feb;
     outline: none;
+    background-color: #21262d; /* Cambio de fondo al enfocarse */
+    transform: scale(1.05); /* Animación al enfocarse */
 }
 
 button {
     padding: 15px 20px;
-    background-color: #ff3366;
+    background-color: #f78166;
     color: white;
     border: none;
     border-radius: 6px;
     cursor: pointer;
     font-size: 16px;
-    transition: background-color 0.3s;
+    transition: background-color 0.3s, transform 0.3s;
 }
 
 button:hover {
-    background-color: #ff6699;
+    background-color: #ffa198;
+    transform: translateY(-3px); /* Animación al pasar el mouse */
 }
 
 .timer {
     font-size: 2em;
-    color: #ffcc33;
+    color: #1f6feb;
     text-align: center;
     margin-bottom: 15px;
+    transition: color 0.5s;
 }
 
 #scoreboard {
     width: 100%;
     border-collapse: collapse;
+    transition: border-color 0.5s;
 }
 
 #scoreboard th, #scoreboard td {
-    border: 1px solid #ffcc33;
+    border: 1px solid #1f6feb;
     padding: 12px;
     text-align: center;
+    transition: background-color 0.5s;
+}
+
+#scoreboard th:hover, #scoreboard td:hover {
+    background-color: #30363d; /* Cambio de fondo al pasar el mouse */
 }
 
 #message {
-    background: #ff3366;
+    background: #f78166;
     color: white;
     padding: 12px;
     border-radius: 6px;
     text-align: center;
     display: none;
+    transition: background-color 0.5s, transform 0.5s;
 }
