@@ -332,7 +332,7 @@ function endGame() {
     // Comprobar si el último jugador tiene 0 puntos
     const lastPlayerScore = scores[players[players.length - 1]].score;
     if (lastPlayerScore <= 0) {
-        alert("La partida no es válida ya que el último jugador tiene 0 puntos.");
+        alert("La partida para este jugador no es válida, ya que tiene 0 puntos; no descalifica ni gana.");
         displayScores();
     } else {
         displayScores();
