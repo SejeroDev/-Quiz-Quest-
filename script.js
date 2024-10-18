@@ -3,19 +3,13 @@ let scores = {};
 let currentQuestion;
 let timeLeft;
 let timerInterval;
-let players = JSON.parse(localStorage.getItem('players')) || [];
+let players = [];
 let currentPlayerIndex = 0;
-let totalRounds = localStorage.getItem('totalRounds') || 3;
+let totalRounds;
 let currentRound = 0;
-let allowRepeats = localStorage.getItem('allowRepeats') === 'yes';
+let allowRepeats;
 
-// Actualizar los controles del tiempo y las rondas desde localStorage
-document.getElementById('timeSelect').value = localStorage.getItem('time') || 30;
-document.getElementById('timeValue').textContent = `${localStorage.getItem('time') || 30} segundos`;
-document.getElementById('roundsSelect').value = totalRounds;
-document.getElementById('roundsValue').textContent = `${totalRounds} rondas`;
-document.getElementById('repeatQuestions').value = allowRepeats ? 'yes' : 'no';
-
+// Definición de presets
 const presets = {
     simplePresent: [
         { question: "He _____ to the gym every day.", answer: "goes", hint: "Es un verbo en tercera persona." },
@@ -182,9 +176,6 @@ const presets = {
     ]
 };
 
-// Recuperar la lista de jugadores si hay jugadores almacenados
-updatePlayerList();
-
 document.getElementById('addPlayer').addEventListener('click', addPlayer);
 document.getElementById('startButton').addEventListener('click', startGame);
 document.getElementById('submitAnswer').addEventListener('click', checkAnswer);
@@ -202,19 +193,16 @@ document.getElementById('hintButton').addEventListener('click', giveHint);
 const timeSelect = document.getElementById('timeSelect');
 timeSelect.addEventListener('input', function() {
     document.getElementById('timeValue').textContent = `${timeSelect.value} segundos`;
-    localStorage.setItem('time', timeSelect.value); // Guardar el tiempo en localStorage
 });
 
 const roundsSelect = document.getElementById('roundsSelect');
 roundsSelect.addEventListener('input', function() {
     document.getElementById('roundsValue').textContent = `${roundsSelect.value} rondas`;
-    localStorage.setItem('totalRounds', roundsSelect.value); // Guardar las rondas en localStorage
 });
 
 const repeatQuestionsSelect = document.getElementById('repeatQuestions');
 repeatQuestionsSelect.addEventListener('change', function() {
     allowRepeats = repeatQuestionsSelect.value === 'yes';
-    localStorage.setItem('allowRepeats', allowRepeats ? 'yes' : 'no'); // Guardar la opción de repetir preguntas
 });
 
 function addPlayer() {
@@ -225,35 +213,17 @@ function addPlayer() {
         scores[playerName] = { score: 0, correct: 0, incorrect: 0 };
         playerInput.value = '';
         updatePlayerList();
-        localStorage.setItem('players', JSON.stringify(players)); // Guardar los nombres de los jugadores en localStorage
     }
 }
 
 function updatePlayerList() {
     const playerList = document.getElementById('playerList');
     playerList.innerHTML = '';
-    players.forEach((player, index) => {
+    players.forEach(player => {
         const li = document.createElement('li');
         li.textContent = player;
-
-        // Añadir botón para quitar jugadores
-        const removeButton = document.createElement('button');
-        removeButton.textContent = 'Quitar';
-        removeButton.addEventListener('click', () => {
-            removePlayer(index);
-        });
-
-        li.appendChild(removeButton);
         playerList.appendChild(li);
     });
-}
-
-function removePlayer(index) {
-    const playerName = players[index];
-    players.splice(index, 1); // Eliminar jugador de la lista
-    delete scores[playerName]; // Eliminar el puntaje del jugador
-    updatePlayerList(); // Actualiza la lista
-    localStorage.setItem('players', JSON.stringify(players)); // Actualizar los jugadores en localStorage
 }
 
 function startGame() {
@@ -277,12 +247,6 @@ function loadPresets() {
 }
 
 function nextRound() {
-    if (players.length === 1) {
-        alert(`${players[0]} es el ganador!`);
-        endGame();
-        return;
-    }
-
     if (currentRound < totalRounds) {
         currentPlayerIndex = 0; // Reiniciar el índice del jugador para cada nueva ronda
         askNextQuestion();
@@ -352,21 +316,11 @@ function checkAnswer() {
     }
 
     // Verificar si el jugador debe ser descalificado
-    if (scores[players[currentPlayerIndex]].score <= 0) {
-        alert(`${players[currentPlayerIndex]} ha sido descalificado.`);
-        players.splice(currentPlayerIndex, 1); // Elimina al jugador
-        localStorage.setItem('players', JSON.stringify(players)); // Actualiza los jugadores en localStorage
-
-        if (players.length === 1) {
-            alert(`${players[0]} es el ganador!`);
-            endGame();
-            return;
-        }
-
-    } else {
-        answerInput.value = '';
+    if (scores[players[currentPlayerIndex]].score < 0) {
+        scores[players[currentPlayerIndex]].score = 0; // Mantener el puntaje en 0 si es menor
     }
 
+    answerInput.value = '';
     currentPlayerIndex++; // Pasar al siguiente jugador
     askNextQuestion(); // Continuar con la siguiente pregunta
 }
@@ -374,9 +328,17 @@ function checkAnswer() {
 function endGame() {
     clearInterval(timerInterval);
     document.getElementById('game').style.display = 'none';
-    displayScores();
+    
+    // Comprobar si el último jugador tiene 0 puntos
+    const lastPlayerScore = scores[players[players.length - 1]].score;
+    if (lastPlayerScore <= 0) {
+        alert("La partida no es válida ya que el último jugador tiene 0 puntos.");
+        displayScores();
+    } else {
+        displayScores();
+    }
+    
     document.getElementById('retryButton').style.display = 'block';
-    localStorage.clear(); // Limpiar localStorage al final del juego
 }
 
 function displayScores() {
@@ -394,13 +356,17 @@ function displayScores() {
 }
 
 function retryGame() {
-    players = [];
-    scores = {};
     currentRound = 0;
     currentPlayerIndex = 0;
     document.getElementById('scores').style.display = 'none';
-    document.getElementById('retryButton').style.display = 'none';
-    document.getElementById('setup').style.display = 'block';
+    document.getElementById('game').style.display = 'block';
+    
+    // Resetear puntajes pero conservar nombres
+    for (const player of players) {
+        scores[player] = { score: 0, correct: 0, incorrect: 0 };
+    }
+
+    nextRound();
 }
 
 function openCustomMode() {
@@ -408,7 +374,7 @@ function openCustomMode() {
 }
 
 function saveCustomQuestions() {
-    const customQuestionsText = document.getElementById('customQuestionsText').value;
+    const customQuestionsText = document.getElementById('customQuestionsText').value.trim();
     const customQuestions = customQuestionsText.split('\n').map(line => {
         const parts = line.split('|');
         return {
